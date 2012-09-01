@@ -198,7 +198,7 @@ jobs.process('email', 20, function(job, done){
 
 ### Processing Sets
 
- If Jobs are created as Job Sets, like-jobs will be processed first.
+ If Jobs are created as Job Sets, like-jobs will be processed together.
  
 ```js
 jobs.create('email', {
