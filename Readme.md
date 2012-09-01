@@ -228,7 +228,7 @@ jobs.process('email', function(job, done){
 });
 ```
 
-This is useful to avoid tearing down and recreating external connections and/or jobs could be combined.  With the example above, instead of sending 2 emails to tj, they could be combined into a single welcome email.
+Job Sets can be useful to avoid tearing down and recreating external connections and/or combining similar job work.  With the example above, instead of sending 2 emails to tj, they could be combined into a single welcome email.
 
 See examples/sets.js for more.
 
