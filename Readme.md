@@ -10,6 +10,7 @@
 
   - delayed jobs
   - job event and progress pubsub
+  - job sets
   - rich integrated UI
   - infinite scrolling
   - UI progress indication
@@ -89,6 +90,20 @@ job.log('$%d sent to %s', amount, user.name);
 ```js
 job.progress(frames, totalFrames);
 ```
+
+### Job Sets
+
+ Like-jobs can be grouped and processed together by passing in a data[key] to be indexed.  The effect is that once a job is processed, al other jobs matching the same indexed field will supersede all other jobs/prioritization until they're exhausted.
+
+ ```js
+ jobs.create('email', {
+     title: 'welcome email for tj'
+   , to: 'tj@learnboost.com'
+   , template: 'welcome-email'
+ }, 'to').save(); // creates setes of jobs on key "to"
+```
+
+ When processing, all jobs with to = tj@learnboost.com will be processed before moving on.  See processing below.
 
 ### Job Events
 
@@ -179,6 +194,40 @@ jobs.process('email', 20, function(job, done){
   // ...
 });
 ```
+
+### Processing Sets
+
+ If jobs are created with Sets on a data[key], like-jobs will be processed until exhausted.
+ 
+```js
+jobs.create('email', {
+     title: 'welcome email for tj'
+   , to: 'tj@learnboost.com'
+   , template: 'welcome-email'
+ }, 'to').save(); 
+
+jobs.create('email', {
+     title: 'welcome email for bob'
+   , to: 'bob@example.com'
+   , template: 'welcome-email'
+ }, 'to').save(); 
+
+jobs.create('email', {
+     title: 'welcome email 2 for tj'
+   , to: 'tj@learnboost.com'
+   , template: 'welcome-email2'
+ }, 'to').save(); 
+
+jobs.process('email', function(job, done){
+  // if to:tj@learnboost.com then 
+  // all jobs to:tj@learnboost.com will be processed with standard prioritization, that is 
+  // high priority jobs to tj will appear before low
+  // but all jobs to tj will arrive before jobs for any other user
+});
+```
+
+This is useful to avoid tearing down and recreating external connections and/or jobs could be combined.  With the example above, instead of sending 2 emails to tj, they could be combined into a single welcome email.
+
 
 ### Updating Progress
 
