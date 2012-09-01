@@ -63,6 +63,21 @@ jobs.create('email', {
 };
 ```
 
+### Job Sets
+
+ Like-jobs can be grouped and processed together by passing in a data[key] to be indexed.  The effect is that once a job is processed, al other jobs matching the same indexed field will supersede all other jobs/prioritization until they're exhausted.
+
+ ```js
+ jobs.create('email', {
+     title: 'welcome email for tj'
+   , to: 'tj@learnboost.com'
+   , template: 'welcome-email'
+ }, 'to').save(); // creates setes of jobs on key "to"
+```
+
+ When processing, all jobs with to = tj@learnboost.com will be processed before moving on.  See processing below.
+
+
 ### Failure Attempts
 
  By default jobs only have _one_ attempt, that is when they fail, they are marked as a failure, and remain that way until you intervene. However, Kue allows you to specify this, which is important for jobs such as transferring an email, which upon failure, may usually retry without issue. To do this invoke the `.attempts()` method with a number.
@@ -90,20 +105,6 @@ job.log('$%d sent to %s', amount, user.name);
 ```js
 job.progress(frames, totalFrames);
 ```
-
-### Job Sets
-
- Like-jobs can be grouped and processed together by passing in a data[key] to be indexed.  The effect is that once a job is processed, al other jobs matching the same indexed field will supersede all other jobs/prioritization until they're exhausted.
-
- ```js
- jobs.create('email', {
-     title: 'welcome email for tj'
-   , to: 'tj@learnboost.com'
-   , template: 'welcome-email'
- }, 'to').save(); // creates setes of jobs on key "to"
-```
-
- When processing, all jobs with to = tj@learnboost.com will be processed before moving on.  See processing below.
 
 ### Job Events
 
@@ -197,7 +198,7 @@ jobs.process('email', 20, function(job, done){
 
 ### Processing Sets
 
- If jobs are created with Sets on a data[key], like-jobs will be processed until exhausted.
+ If Jobs are created as Job Sets, like-jobs will be processed first.
  
 ```js
 jobs.create('email', {
@@ -220,13 +221,16 @@ jobs.create('email', {
 
 jobs.process('email', function(job, done){
   // if to:tj@learnboost.com then 
-  // all jobs to:tj@learnboost.com will be processed with standard prioritization, that is 
-  // high priority jobs to tj will appear before low
+  // all jobs to:tj@learnboost.com will be processed with standard prioritization prior to to:[anything else]
+  // 
+  // for example, high priority jobs to tj will arrive before low
   // but all jobs to tj will arrive before jobs for any other user
 });
 ```
 
 This is useful to avoid tearing down and recreating external connections and/or jobs could be combined.  With the example above, instead of sending 2 emails to tj, they could be combined into a single welcome email.
+
+See examples/sets.js for more.
 
 
 ### Updating Progress
