@@ -183,6 +183,8 @@ var kue = require('kue')
 
 jobs.process('email', function(job, done){
   email(job.data.to, done);
+
+  // optionally return false; to halt processing
 });
 ```
 
